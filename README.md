@@ -16,16 +16,6 @@
 export BOT_TOKEN="ТУТ_ВВЕДИ_СВОЙ_ТОКЕН"
 ```
 
-## Запуск
-Запусти бота одним из вариантов:
-```bash
-python NoteVault_bot/main.py
-```
-или
-```bash
-python -m NoteVault_bot.main
-```
-
 После запуска бот перейдёт в режим long polling.
 
 ## Команды и кнопки
