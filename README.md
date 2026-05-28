@@ -10,15 +10,6 @@
 ## Требования
 - Python 3.10+
 
-## Установка
-```bash
-python -m venv .venv
-source .venv/bin/activate
-
-pip install -r requirements.txt
-```
-> Если файла `requirements.txt` в проекте нет — установи зависимости вручную (или создай `requirements.txt`), ориентируясь на импорты: `aiogram`, `pydantic-settings`.
-
 ## Настройка
 Перед запуском задай переменную окружения с токеном бота:
 ```bash
