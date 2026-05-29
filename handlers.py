@@ -1,9 +1,17 @@
 from aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardButton, CallbackQuery
 from aiogram.filters import CommandStart, Command
+import buttons as kb
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import FSMContext
+from database import Database
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-import buttons as kb 
-
+class DebtStates(StatesGroup):
+    waiting_for_name = State()      
+    waiting_for_amount = State()       
+    waiting_to_increase = State()      
+    waiting_to_decrease = State()      
 router = Router()
 FAQ_TEXT = """
 📋 <b>Часто задаваемые вопросы (FAQ)</b>
@@ -25,6 +33,34 @@ FAQ_TEXT = """
 ▸ Кто создал бота? — Проект разработан автором: zadrot💎
 """
 
+@router.message(F.text == "💲Долги")
+async def handle_duty(message: Message, db: Database):
+    debts = await db.get_debt(user_id=message.from_user.id)
+    builder = InlineKeyboardBuilder()
+
+    builder.add(InlineKeyboardButton(
+        text='➕Добавить должника',
+        callback_data='add_new_debt'
+    ))
+
+    if not debts:
+        await message.answer(
+            "💲 <b>Раздел: Долги</b>\n\n📭 Список должников пока пуст.",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+            )
+    else:
+        await message.answer(
+            "У вас есть сохраненные долги!",
+            reply_markup=builder.as_markup()
+        )
+@router.callback_query(F.data == 'add_new_debt')
+async def start_add_debt(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer("👤Введите имя должника: ")
+    await state.set_state(DebtStates.waiting_for_name)
+    await callback.answer() 
+
+
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     await message.answer(
@@ -41,7 +77,7 @@ async def cmd_start(message: Message):
 async def cmd_help(message: Message):
     await message.reply("Я умею повторять твои сообщения! Просто отправь мне текст.")
 
-@router.message(F.text.lower() == "Кто автор бота?")
+@router.message(F.text.lower() == "кто автор бота?")
 async def aftor_info(message: Message):
     await message.reply("Автором бота является: zadrot (Alan)")
 
@@ -51,15 +87,11 @@ async def faq_comand(message: Message):
 
 @router.message(F.text == "📝Заметки")
 async def handle_notes(message: Message):
-    await message.answer("Вы открыли раздел 📝Заметки. Здесь пока пусто. Мы создаем бота")
-
-@router.message(F.text == "💲Долги")
-async def handle_duty(message: Message):
-    await message.answer("Вы открыли раздел 💲Долги. Здесь пока пусто. Мы создаем бота")
+    await message.answer("Вы открыли раздел 📝Заметки. На данных момент мы создаем вкладку 💲Долги")
 
 @router.message(F.text == "🎂Дни рождения")
 async def handle_birthday(message: Message):
-    await message.answer("Вы открыли раздел 🎂Дни рождения. Здесь пока пусто. Мы создаем бота")
+    await message.answer("Вы открыли раздел 🎂Дни рождения. На данных момент мы создаем вкладку 💲Долги")
 
 @router.message(F.photo)
 async def get_photo(message: Message):
