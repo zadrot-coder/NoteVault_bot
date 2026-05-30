@@ -8,10 +8,10 @@ from database import Database
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 class DebtStates(StatesGroup):
-    waiting_for_name = State()       
-    waiting_for_amount = State()   
-    waiting_to_increase = State()     
-    waiting_to_decrease = State()     
+    waiting_for_name = State()    
+    waiting_for_amount = State()  
+    waiting_to_increase = State()    
+    waiting_to_decrease = State()      
 router = Router()
 FAQ_TEXT = """
 📋 <b>Часто задаваемые вопросы (FAQ)</b>
@@ -30,7 +30,25 @@ FAQ_TEXT = """
 
 <b>🤖 Технические вопросы</b>
 ▸ Бот завис и не отвечает? — Просто отправь команду /start заново, это перезапустит меню.
+▸ Что-то не понимаешь? — Просто отправь команду /help, он тебе поможет во всем разобраться.
 ▸ Кто создал бота? — Проект разработан автором: zadrot💎
+"""
+
+HELP_TEXT = """
+📖 <b>Руководство пользователя NoteVault</b>
+
+Я — твое персональное цифровое хранилище. Если нижние кнопки меню пропали или бот не реагирует, ты можешь использовать быстрые команды:
+
+⚙️ <b>Системные команды:</b>
+/start — Перезапустить бота и вернуть главное меню кнопок
+/help — Показать эту справку еще раз
+
+💡 <b>Советы по использованию:</b>
+▸ Все твои записи (заметки, долги, праздники) видишь <b>только ты</b>. Они защищены твоим Telegram ID.
+▸ Если бот застрял в режиме ввода текста (например, ждет сумму долга), просто нажми /start, чтобы сбросить режим.
+
+👨‍💻 <b>Поддержка проекта:</b>
+Разработчик: zadrot (Alan) 💎
 """
 
 @router.message(F.text == "💲Долги")
@@ -75,9 +93,8 @@ async def open_debt_card(callback: CallbackQuery, db: Database):
 
     await callback.message.edit_text(
         f"⚙️ <b>Управление должником</b>\n\n"
-        f"Вы выбрали запись с ID: <code>{debt_id}</code>\n"
-        f"Здесь мы сделаем кнопки увеличения, уменьшения и удаления!",
-        reply_markup=card_builder.as_markup(),
+        f"Здесь вы сможете: \n📈<b>Увеличить сумму</b>\n📉<b>Уменьшить сумму</b>\n❌<b>Удалить пользователя</b>",
+        reply_markup=card_builder.as_markup(), 
         parse_mode="HTML"
     )
     await callback.answer()
@@ -98,6 +115,7 @@ async def process_delete_debt(callback: CallbackQuery, db: Database):
             parse_mode='HTML'
         )
     await callback.answer()
+
 @router.callback_query(F.data.startswith('inc_debt_'))
 async def process_more_debt(callback: CallbackQuery, state: FSMContext):
     debt_id = int(callback.data.split('_')[-1])
@@ -231,7 +249,7 @@ async def cmd_start(message: Message):
 
 @router.message(Command("help"))
 async def cmd_help(message: Message):
-    await message.reply("Я умею повторять твои сообщения! Просто отправь мне текст.")
+    await message.reply(HELP_TEXT, parse_mode="HTML")
 
 @router.message(F.text.lower() == "кто автор бота?")
 async def aftor_info(message: Message):
@@ -243,11 +261,11 @@ async def faq_comand(message: Message):
 
 @router.message(F.text == "📝Заметки")
 async def handle_notes(message: Message):
-    await message.answer("Вы открыли раздел 📝Заметки. На данных момент мы создаем вкладку 💲Долги")
+    await message.answer("Вы открыли раздел 📝Заметки. На данных момент мы создаем вкладку 🎂Дни рождения")
 
 @router.message(F.text == "🎂Дни рождения")
 async def handle_birthday(message: Message):
-    await message.answer("Вы открыли раздел 🎂Дни рождения. На данных момент мы создаем вкладку 💲Долги")
+    await message.answer("Вы открыли раздел 🎂Дни рождения. На данных момент мы создаем вкладку 🎂Дни рождения")
 
 @router.message(F.photo)
 async def get_photo(message: Message):
